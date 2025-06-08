@@ -1,0 +1,25 @@
+Base + GAN chất lượng | XGBoost_tuned
+Best Params: {'colsample_bytree': 1.0, 'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 200, 'subsample': 0.8}
+Accuracy:      0.3374
+F1-macro:      0.3375
+Precision:     0.3373
+Recall:        0.3381
+ROC-AUC (OvR): 0.5890
+
+Confusion Matrix:
+[[710 647 611 631]
+ [552 893 458 597]
+ [583 520 899 477]
+ [563 595 438 896]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.2949    0.2732    0.2836      2599
+           1     0.3363    0.3572    0.3465      2500
+           2     0.3736    0.3626    0.3681      2479
+           3     0.3445    0.3596    0.3519      2492
+
+    accuracy                         0.3374     10070
+   macro avg     0.3373    0.3381    0.3375     10070
+weighted avg     0.3368    0.3374    0.3369     10070

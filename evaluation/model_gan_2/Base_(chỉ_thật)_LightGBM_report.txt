@@ -1,0 +1,24 @@
+Base (chỉ thật) | LightGBM
+Accuracy:      0.3475
+F1-macro:      0.1779
+Precision:     0.2326
+Recall:        0.2452
+ROC-AUC (OvR): 0.4939
+
+Confusion Matrix:
+[[2248  126  129   96]
+ [1259   60   71   71]
+ [1260   56   54   69]
+ [1282   58   59   54]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.3716    0.8649    0.5199      2599
+           1     0.2000    0.0411    0.0681      1461
+           2     0.1725    0.0375    0.0616      1439
+           3     0.1862    0.0372    0.0620      1453
+
+    accuracy                         0.3475      6952
+   macro avg     0.2326    0.2452    0.1779      6952
+weighted avg     0.2556    0.3475    0.2344      6952

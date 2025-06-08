@@ -1,0 +1,25 @@
+Base (chỉ thật) | XGBoost_tuned
+Best Params: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 200, 'subsample': 0.8}
+Accuracy:      0.3350
+F1-macro:      0.2139
+Precision:     0.2489
+Recall:        0.2512
+ROC-AUC (OvR): 0.5034
+
+Confusion Matrix:
+[[1972  213  197  217]
+ [1077  143  114  127]
+ [1083  129  109  118]
+ [1095  139  114  105]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.3773    0.7588    0.5040      2599
+           1     0.2292    0.0979    0.1372      1461
+           2     0.2041    0.0757    0.1105      1439
+           3     0.1852    0.0723    0.1040      1453
+
+    accuracy                         0.3350      6952
+   macro avg     0.2489    0.2512    0.2139      6952
+weighted avg     0.2702    0.3350    0.2618      6952

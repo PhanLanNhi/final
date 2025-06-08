@@ -1,0 +1,25 @@
+Base (chỉ thật) | LightGBM_tuned
+Best Params: {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 200, 'subsample': 0.8}
+Accuracy:      0.3333
+F1-macro:      0.2134
+Precision:     0.2489
+Recall:        0.2501
+ROC-AUC (OvR): 0.4991
+
+Confusion Matrix:
+[[1959  221  205  214]
+ [1086  124  109  142]
+ [1094  110  108  127]
+ [1084  122  121  126]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.3751    0.7538    0.5009      2599
+           1     0.2149    0.0849    0.1217      1461
+           2     0.1989    0.0751    0.1090      1439
+           3     0.2069    0.0867    0.1222      1453
+
+    accuracy                         0.3333      6952
+   macro avg     0.2489    0.2501    0.2134      6952
+weighted avg     0.2698    0.3333    0.2609      6952

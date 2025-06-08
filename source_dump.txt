@@ -8,549 +8,891 @@
 projectfinal/
 ├── .git/
 ├── data/
-│   ├── ctgan_generated_faults_by_type_with_time.csv
-│   ├── full_dataset_with_gan.csv
+│   ├── ctgan_synthetic_optimized.csv
+│   ├── full_dataset_with_gan_optimized.csv
 │   ├── iot_equipment_monitoring_dataset.csv
-│   ├── processed_ctgan_generated_faults.csv
-│   └── processed_iot_dataset.csv
-├── txl/
-│   └── txl.py
-├── generate_data_GAN.ipynb
-├── train_and_predict_strategies.py
-├── train_full_data_with_gan.py
-├── train_normal_data.py
-├── tuning_train_and_pre.py.py
-├── tuning_train_full.py
-└── visualization_GAN.ipynb
+│   ├── processed_iot_dataset_full.csv
+│   └── processed_iot_dataset_no_fft_anomaly.csv
+├── evaluation/
+│   ├── model_base/
+│   │   ├── compare_feature_importance_lgbm.png
+│   │   ├── compare_feature_importance_xgb.png
+│   │   ├── processed_iot_dataset_full_lgbm_confusion_matrix.png
+│   │   ├── processed_iot_dataset_full_lgbm_feature_importance.png
+│   │   ├── processed_iot_dataset_full_lgbm_feature_importance.txt
+│   │   ├── processed_iot_dataset_full_lgbm_report.txt
+│   │   ├── processed_iot_dataset_full_xgb_confusion_matrix.png
+│   │   ├── processed_iot_dataset_full_xgb_feature_importance.png
+│   │   ├── processed_iot_dataset_full_xgb_feature_importance.txt
+│   │   ├── processed_iot_dataset_full_xgb_report.txt
+│   │   ├── processed_iot_dataset_no_fft_anomaly_lgbm_confusion_matrix.png
+│   │   ├── processed_iot_dataset_no_fft_anomaly_lgbm_feature_importance.png
+│   │   ├── processed_iot_dataset_no_fft_anomaly_lgbm_feature_importance.txt
+│   │   ├── processed_iot_dataset_no_fft_anomaly_lgbm_report.txt
+│   │   ├── processed_iot_dataset_no_fft_anomaly_xgb_confusion_matrix.png
+│   │   ├── processed_iot_dataset_no_fft_anomaly_xgb_feature_importance.png
+│   │   ├── processed_iot_dataset_no_fft_anomaly_xgb_feature_importance.txt
+│   │   └── processed_iot_dataset_no_fft_anomaly_xgb_report.txt
+│   ├── model_gan_1/
+│   │   ├── LightGBM_confusion_matrix.png
+│   │   ├── LightGBM_report.txt
+│   │   ├── XGBoost_confusion_matrix.png
+│   │   └── XGBoost_report.txt
+│   ├── model_gan_1_tuning/
+│   │   ├── LightGBM_report.txt
+│   │   └── XGBoost_report.txt
+│   ├── model_gan_2/
+│   │   ├── Base_(chỉ_thật)_LightGBM_confusion_matrix.png
+│   │   ├── Base_(chỉ_thật)_LightGBM_report.txt
+│   │   ├── Base_(chỉ_thật)_XGBoost_confusion_matrix.png
+│   │   ├── Base_(chỉ_thật)_XGBoost_report.txt
+│   │   ├── Base_+_GAN_LightGBM_confusion_matrix.png
+│   │   ├── Base_+_GAN_LightGBM_report.txt
+│   │   ├── Base_+_GAN_XGBoost_confusion_matrix.png
+│   │   ├── Base_+_GAN_XGBoost_report.txt
+│   │   ├── Base_+_GAN_chất_lượng_LightGBM_confusion_matrix.png
+│   │   ├── Base_+_GAN_chất_lượng_LightGBM_report.txt
+│   │   ├── Base_+_GAN_chất_lượng_XGBoost_confusion_matrix.png
+│   │   └── Base_+_GAN_chất_lượng_XGBoost_report.txt
+│   └── model_gan_2_tuning/
+│       ├── Base_(chỉ_thật)_LightGBM_tuned_classweight_confusion_matrix.png
+│       ├── Base_(chỉ_thật)_LightGBM_tuned_classweight_report.txt
+│       ├── Base_(chỉ_thật)_XGBoost_tuned_classweight_confusion_matrix.png
+│       ├── Base_(chỉ_thật)_XGBoost_tuned_classweight_report.txt
+│       ├── Base_+_GAN_LightGBM_tuned_classweight_confusion_matrix.png
+│       ├── Base_+_GAN_LightGBM_tuned_classweight_report.txt
+│       ├── Base_+_GAN_XGBoost_tuned_classweight_confusion_matrix.png
+│       ├── Base_+_GAN_XGBoost_tuned_classweight_report.txt
+│       ├── Base_+_GAN_chất_lượng_LightGBM_tuned_classweight_confusion_matrix.png
+│       ├── Base_+_GAN_chất_lượng_LightGBM_tuned_classweight_report.txt
+│       ├── Base_+_GAN_chất_lượng_XGBoost_tuned_classweight_confusion_matrix.png
+│       ├── Base_+_GAN_chất_lượng_XGBoost_tuned_classweight_report.txt
+│       ├── compare_auc.png
+│       └── compare_f1score.png
+├── gan_synthesis/
+│   └── genCTGAN_final.ipynb
+├── model_training/
+│   ├── model_base.py
+│   ├── model_with_gan_1.py
+│   ├── model_with_gan_1_tuning.py
+│   ├── model_with_gan_2.py
+│   └── model_with_gan_2_tuning.py
+└── preprocessing/
+    └── preprocess.py
 ```
 
 ## FILE CONTENTS
 
-### train_and_predict_strategies.py
+### model_training\model_base.py
 ```py
+import warnings
+warnings.filterwarnings('ignore')
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
-from sklearn.preprocessing import StandardScaler
+import seaborn as sns
+import os
 from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.inspection import permutation_importance
+from sklearn.metrics import (
+    classification_report, confusion_matrix, roc_auc_score,
+    accuracy_score, f1_score, precision_score, recall_score
+)
+
+# ==== Đường dẫn dữ liệu ====
+file_full = "data/processed_iot_dataset_full.csv"
+file_no_fft = "data/processed_iot_dataset_no_fft_anomaly.csv"
+save_dir = "evaluation/model_base"
+
+os.makedirs(save_dir, exist_ok=True)
+
+# ==== Hàm lưu kết quả ====
+def save_results(y_test, y_pred, y_proba, importance_df, model_type, file_tag, save_dir):
+    # Lưu báo cáo
+    report_txt = os.path.join(save_dir, f"{file_tag}_{model_type}_report.txt")
+    with open(report_txt, "w", encoding="utf-8") as f:
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average='macro')
+        precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+        recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+        roc_auc = roc_auc_score(y_test, y_proba, multi_class='ovr')
+        f.write(f"Accuracy:      {acc:.4f}\n")
+        f.write(f"F1-macro:      {f1:.4f}\n")
+        f.write(f"Precision:     {precision:.4f}\n")
+        f.write(f"Recall:        {recall:.4f}\n")
+        f.write(f"ROC-AUC (OvR): {roc_auc:.4f}\n\n")
+        f.write("Confusion Matrix:\n")
+        f.write(np.array2string(confusion_matrix(y_test, y_pred)))
+        f.write("\n\nClassification Report:\n")
+        f.write(classification_report(y_test, y_pred, digits=4))
+    print(f"Saved report to {report_txt}")
+
+    # Lưu confusion matrix plot
+    cm_plot = os.path.join(save_dir, f"{file_tag}_{model_type}_confusion_matrix.png")
+    plt.figure(figsize=(6,5))
+    sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+    plt.title(f"Confusion Matrix: {model_type.upper()} - {file_tag}", fontsize=13, pad=20)
+    plt.xlabel("Predicted", fontsize=11)
+    plt.ylabel("True", fontsize=11)
+    plt.subplots_adjust(top=0.85)  # Dịch lề trên xuống một chút
+    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Giữ 95% chiều cao cho plot
+    plt.savefig(cm_plot)
+    plt.close()
+    print(f"Saved confusion matrix plot to {cm_plot}")
+
+    # Lưu permutation feature importance plot
+    imp_plot = os.path.join(save_dir, f"{file_tag}_{model_type}_feature_importance.png")
+    plt.figure(figsize=(10, 5))
+    sns.barplot(x='Importance', y='Feature', data=importance_df)
+    plt.title(f"Permutation Feature Importance - {model_type.upper()} - {file_tag}")
+    plt.tight_layout()
+    plt.savefig(imp_plot)
+    plt.close()
+    print(f"Saved feature importance plot to {imp_plot}")
+
+    # Lưu top 10 importance ra txt
+    imp_txt = os.path.join(save_dir, f"{file_tag}_{model_type}_feature_importance.txt")
+    importance_df.head(10).to_csv(imp_txt, sep='\t', index=False)
+    print(f"Saved top-10 feature importance to {imp_txt}")
+
+# ==== Hàm so sánh và lưu biểu đồ feature importance ====
+def compare_and_save_importance(imp_df1, imp_df2, label1, label2, save_dir, filename):
+    df_compare = imp_df1[['Feature', 'Importance']].merge(
+        imp_df2[['Feature', 'Importance']],
+        on='Feature', how='left', suffixes=(f'_{label1}', f'_{label2}')
+    )
+    df_compare = df_compare.set_index('Feature')
+    plt.figure(figsize=(10,7))
+    df_compare.plot(kind='barh', figsize=(10,7))
+    plt.title(f'So sánh Feature Importance - {label1} vs {label2}')
+    plt.xlabel('Permutation Importance')
+    plt.legend([label1, label2])
+    plt.tight_layout()
+    compare_path = os.path.join(save_dir, filename)
+    plt.savefig(compare_path)
+    plt.close()
+    print(f"Saved compare feature importance plot to {compare_path}")
+
+# ==== Huấn luyện, đánh giá, lưu kết quả ====
+imp_dfs = []
+for file_path in [file_full, file_no_fft]:
+    for model_type in ['xgb', 'lgbm']:
+        df = pd.read_csv(file_path)
+        file_tag = os.path.basename(file_path).replace('.csv','')
+        X = df.drop(columns=['Fault_Type'])
+        y = df['Fault_Type']
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, stratify=y, random_state=42
+        )
+
+        if model_type == 'xgb':
+            model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+        elif model_type == 'lgbm':
+            model = LGBMClassifier(random_state=42, verbose=-1)
+        else:
+            raise ValueError('Unknown model type')
+
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        y_proba = model.predict_proba(X_test)
+
+        # Permutation importance
+        result = permutation_importance(model, X_test, y_test, n_repeats=10, random_state=42)
+        importance_df = pd.DataFrame({
+            'Feature': X.columns,
+            'Importance': result.importances_mean
+        }).sort_values(by='Importance', ascending=False)
+
+        # Lưu kết quả
+        save_results(y_test, y_pred, y_proba, importance_df, model_type, file_tag, save_dir)
+        imp_dfs.append((file_tag, model_type, importance_df))
+
+# ==== So sánh và lưu file biểu đồ so sánh ====
+imp_dict = {}
+for file_tag, model_type, imp_df in imp_dfs:
+    imp_dict[(file_tag, model_type)] = imp_df
+
+# So sánh XGBoost
+key1 = ("processed_iot_dataset_full", "xgb")
+key2 = ("processed_iot_dataset_no_fft_anomaly", "xgb")
+if key1 in imp_dict and key2 in imp_dict:
+    compare_and_save_importance(
+        imp_dict[key1], imp_dict[key2],
+        "Có FFT/Anomaly", "Không FFT/Anomaly",
+        save_dir=save_dir,
+        filename="compare_feature_importance_xgb.png"
+    )
+
+# So sánh LightGBM
+key1 = ("processed_iot_dataset_full", "lgbm")
+key2 = ("processed_iot_dataset_no_fft_anomaly", "lgbm")
+if key1 in imp_dict and key2 in imp_dict:
+    compare_and_save_importance(
+        imp_dict[key1], imp_dict[key2],
+        "Có FFT/Anomaly", "Không FFT/Anomaly",
+        save_dir=save_dir,
+        filename="compare_feature_importance_lgbm.png"
+    )
+
+```
+
+### model_training\model_with_gan_1.py
+```py
+import warnings
+warnings.filterwarnings('ignore')
+import pandas as pd
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, accuracy_score, f1_score, precision_score, recall_score
+
+# Đọc dữ liệu đã ghép
+df = pd.read_csv('data/full_dataset_with_gan_optimized.csv')
+save_dir = 'evaluation/model_gan_1'
+os.makedirs(save_dir, exist_ok=True)
+
+X = df.drop(columns=['Fault_Type'])
+y = df['Fault_Type']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+def save_results(y_test, y_pred, y_proba, model_name, save_dir):
+    # Ghi báo cáo ra txt
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='macro')
+    precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+    recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+    roc_auc = roc_auc_score(y_test, y_proba, multi_class='ovr')
+
+    report_txt = os.path.join(save_dir, f"{model_name}_report.txt")
+    with open(report_txt, "w", encoding="utf-8") as f:
+        f.write(f"{model_name} results\n")
+        f.write(f"Accuracy:      {acc:.4f}\n")
+        f.write(f"F1-macro:      {f1:.4f}\n")
+        f.write(f"Precision:     {precision:.4f}\n")
+        f.write(f"Recall:        {recall:.4f}\n")
+        f.write(f"ROC-AUC (OvR): {roc_auc:.4f}\n\n")
+        f.write("Confusion Matrix:\n")
+        f.write(np.array2string(confusion_matrix(y_test, y_pred)))
+        f.write("\n\nClassification Report:\n")
+        f.write(classification_report(y_test, y_pred, digits=4))
+    print(f"Saved report to {report_txt}")
+
+    # Lưu confusion matrix hình ảnh
+    cm_plot = os.path.join(save_dir, f"{model_name}_confusion_matrix.png")
+    plt.figure(figsize=(6,5))
+    sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+    plt.title(f"Confusion Matrix: {model_name}", fontsize=13, pad=20)
+    plt.xlabel("Predicted", fontsize=11)
+    plt.ylabel("True", fontsize=11)
+    plt.subplots_adjust(top=0.85)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(cm_plot)
+    plt.close()
+    print(f"Saved confusion matrix plot to {cm_plot}")
+
+# --- XGBoost ---
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+xgb.fit(X_train, y_train)
+y_pred_xgb = xgb.predict(X_test)
+y_proba_xgb = xgb.predict_proba(X_test)
+
+print("===== XGBoost =====")
+print(classification_report(y_test, y_pred_xgb))
+print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_xgb))
+roc_auc_xgb = roc_auc_score(y_test, y_proba_xgb, multi_class='ovr')
+print(f"ROC-AUC (OvR): {roc_auc_xgb:.4f}")
+
+save_results(y_test, y_pred_xgb, y_proba_xgb, "XGBoost", save_dir)
+
+# --- LightGBM ---
+lgbm = LGBMClassifier(random_state=42,  verbose=-1)
+lgbm.fit(X_train, y_train)
+y_pred_lgbm = lgbm.predict(X_test)
+y_proba_lgbm = lgbm.predict_proba(X_test)
+
+print("\n===== LightGBM =====")
+print(classification_report(y_test, y_pred_lgbm))
+print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_lgbm))
+roc_auc_lgbm = roc_auc_score(y_test, y_proba_lgbm, multi_class='ovr')
+print(f"ROC-AUC (OvR): {roc_auc_lgbm:.4f}")
+
+save_results(y_test, y_pred_lgbm, y_proba_lgbm, "LightGBM", save_dir)
+
+```
+
+### model_training\model_with_gan_1_tuning.py
+```py
+import warnings
+warnings.filterwarnings('ignore')
+import pandas as pd
+import numpy as np
+import os
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import (
+    classification_report, confusion_matrix, roc_auc_score, accuracy_score, f1_score, precision_score, recall_score
+)
+
+# === Tạo thư mục lưu kết quả ===
+result_dir = "evaluation/model_gan_1_tuning"
+os.makedirs(result_dir, exist_ok=True)
+
+# Đọc dữ liệu đã ghép
+df = pd.read_csv('data/full_dataset_with_gan_optimized.csv')
+X = df.drop(columns=['Fault_Type'])
+y = df['Fault_Type']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# ==== Tính class_weight ====
+classes, counts = np.unique(y_train, return_counts=True)
+class_weights = {k: max(counts)/v for k, v in zip(classes, counts)}
+print("Class weights:", class_weights)
+sample_weight = np.array([class_weights[yy] for yy in y_train])
+
+# ==== Tuning XGBoost (with sample_weight) ====
+xgb_params = {
+    'n_estimators': [100, 200],
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.1, 0.05],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
+}
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+grid_xgb = GridSearchCV(xgb, xgb_params, cv=3, n_jobs=-1, scoring='f1_macro', verbose=1)
+grid_xgb.fit(X_train, y_train, sample_weight=sample_weight)
+best_xgb = grid_xgb.best_estimator_
+
+y_pred_xgb = best_xgb.predict(X_test)
+y_proba_xgb = best_xgb.predict_proba(X_test)
+
+print("\n===== XGBoost (tuned + class_weight) =====")
+print(classification_report(y_test, y_pred_xgb, digits=4))
+print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_xgb))
+roc_auc_xgb = roc_auc_score(y_test, y_proba_xgb, multi_class='ovr')
+print(f"ROC-AUC (OvR): {roc_auc_xgb:.4f}")
+
+# === Lưu kết quả XGBoost ===
+with open(f"{result_dir}/XGBoost_report.txt", "w", encoding="utf-8") as f:
+    f.write("===== XGBoost (tuned + class_weight) =====\n")
+    f.write(classification_report(y_test, y_pred_xgb, digits=4))
+    f.write("\nConfusion matrix:\n")
+    f.write(str(confusion_matrix(y_test, y_pred_xgb)))
+    f.write(f"\nROC-AUC (OvR): {roc_auc_xgb:.4f}\n")
+    acc = accuracy_score(y_test, y_pred_xgb)
+    f1 = f1_score(y_test, y_pred_xgb, average='macro')
+    precision = precision_score(y_test, y_pred_xgb, average='macro', zero_division=0)
+    recall = recall_score(y_test, y_pred_xgb, average='macro', zero_division=0)
+    f.write(f"\nAccuracy:   {acc:.4f}\nF1-macro:   {f1:.4f}\nPrecision:  {precision:.4f}\nRecall:     {recall:.4f}\n")
+
+# ==== Tuning LightGBM (with class_weight) ====
+lgbm_params = {
+    'n_estimators': [100, 200],
+    'max_depth': [3, 5, 7, -1],
+    'learning_rate': [0.1, 0.05],
+    'subsample': [0.8, 1.0],
+    'class_weight': [class_weights],
+    'verbose': [-1]
+}
+lgbm = LGBMClassifier(random_state=42, verbose=-1)
+grid_lgbm = GridSearchCV(lgbm, lgbm_params, cv=3, n_jobs=-1, scoring='f1_macro', verbose=1)
+grid_lgbm.fit(X_train, y_train)
+best_lgbm = grid_lgbm.best_estimator_
+
+y_pred_lgbm = best_lgbm.predict(X_test)
+y_proba_lgbm = best_lgbm.predict_proba(X_test)
+print("\n===== LightGBM (tuned + class_weight) =====")
+print(classification_report(y_test, y_pred_lgbm, digits=4))
+print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_lgbm))
+roc_auc_lgbm = roc_auc_score(y_test, y_proba_lgbm, multi_class='ovr')
+print(f"ROC-AUC (OvR): {roc_auc_lgbm:.4f}")
+
+# === Lưu kết quả LightGBM ===
+with open(f"{result_dir}/LightGBM_report.txt", "w", encoding="utf-8") as f:
+    f.write("===== LightGBM (tuned + class_weight) =====\n")
+    f.write(classification_report(y_test, y_pred_lgbm, digits=4))
+    f.write("\nConfusion matrix:\n")
+    f.write(str(confusion_matrix(y_test, y_pred_lgbm)))
+    f.write(f"\nROC-AUC (OvR): {roc_auc_lgbm:.4f}\n")
+    acc = accuracy_score(y_test, y_pred_lgbm)
+    f1 = f1_score(y_test, y_pred_lgbm, average='macro')
+    precision = precision_score(y_test, y_pred_lgbm, average='macro', zero_division=0)
+    recall = recall_score(y_test, y_pred_lgbm, average='macro', zero_division=0)
+    f.write(f"\nAccuracy:   {acc:.4f}\nF1-macro:   {f1:.4f}\nPrecision:  {precision:.4f}\nRecall:     {recall:.4f}\n")
+
+```
+
+### model_training\model_with_gan_2.py
+```py
+import warnings
+warnings.filterwarnings('ignore')
+import pandas as pd
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    confusion_matrix, classification_report, f1_score, roc_auc_score,
+    accuracy_score, precision_score, recall_score
+)
+
+# --- Thư mục lưu kết quả ---
+result_dir = "evaluation/model_gan_2"
+os.makedirs(result_dir, exist_ok=True)
+
+# --- 1. Load data ---
+df_real = pd.read_csv("data/processed_iot_dataset_full.csv")
+df_gan = pd.read_csv("data/ctgan_synthetic_optimized.csv")
+
+features = [
+    'Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
+    'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score'
+]
+
+# --- 2. Chuẩn bị từng class thật ---
+df_real_0 = df_real[df_real['Fault_Type'] == 0].copy()
+df_real_1 = df_real[df_real['Fault_Type'] == 1].copy()
+df_real_2 = df_real[df_real['Fault_Type'] == 2].copy()
+df_real_3 = df_real[df_real['Fault_Type'] == 3].copy()
+
+# --- 3. GAN lỗi từng class ---
+df_gan_1 = df_gan[df_gan['Fault_Type'] == 1].copy()
+df_gan_2 = df_gan[df_gan['Fault_Type'] == 2].copy()
+df_gan_3 = df_gan[df_gan['Fault_Type'] == 3].copy()
+
+# --- 4. Lọc GAN lỗi chất lượng ---
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import pairwise_distances
-
-# ===== LOAD DATA =====
-df_real = pd.read_csv("data/processed_iot_dataset.csv").dropna()
-df_gan = pd.read_csv("data/processed_ctgan_generated_faults.csv").dropna()
-
-features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
-            'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
-
-df_real_faults = df_real[df_real['Fault_Status'] == 1].copy()
-df_real_nonfaults = df_real[df_real['Fault_Status'] == 0].copy()
-
-# ===== LỌC GAN THEO DISTANCE + ANOMALY =====
 scaler = StandardScaler()
-real_scaled = scaler.fit_transform(df_real_faults[features])
-gan_scaled = scaler.transform(df_gan[features])
-df_gan['distance'] = pairwise_distances(gan_scaled, real_scaled).min(axis=1)
-df_gan_filtered = df_gan.copy()
-df_gan_filtered['score'] = df_gan_filtered['distance'] - df_gan_filtered['Anomaly_Score']
-df_gan_filtered = df_gan_filtered.sort_values('score')  # score thấp hơn → tốt hơn
+df_real_faults = pd.concat([df_real_1, df_real_2, df_real_3], ignore_index=True)
+real_faults_scaled = scaler.fit_transform(df_real_faults[features])
 
-# ===== DEFINE STRATEGIES =====
-np.random.seed(42)
-strategies = {
-    # (1) Chỉ lỗi GAN
-    "Chỉ lỗi GAN (5K+5K)": pd.concat([
-        df_gan_filtered.head(5000),
-        df_real_nonfaults.sample(5000)
+def filter_gan_quality(df_gan_fault):
+    if len(df_gan_fault) == 0:
+        return df_gan_fault
+    gan_scaled = scaler.transform(df_gan_fault[features])
+    dists = pairwise_distances(gan_scaled, real_faults_scaled)
+    df_gan_fault = df_gan_fault.copy()
+    df_gan_fault['distance'] = dists.min(axis=1)
+    df_gan_fault['score'] = df_gan_fault['distance'] - df_gan_fault['Anomaly_Score']
+    return df_gan_fault.sort_values('score')
+
+df_gan_1_q = filter_gan_quality(df_gan_1)
+df_gan_2_q = filter_gan_quality(df_gan_2)
+df_gan_3_q = filter_gan_quality(df_gan_3)
+
+# --- 5. Cân bằng số lượng mỗi nhãn ---
+real_ratio = 0.6
+n_0 = len(df_real_0)
+n_1 = int(len(df_real_1) + len(df_gan_1_q))
+n_2 = int(len(df_real_2) + len(df_gan_2_q))
+n_3 = int(len(df_real_3) + len(df_gan_3_q))
+n_sample = min(n_0, n_1, n_2, n_3)
+n_real_per_fault = int(n_sample * real_ratio)
+n_gan_per_fault = n_sample - n_real_per_fault
+
+def safe_sample(df, n):
+    if len(df) >= n:
+        return df.sample(n=n, random_state=42)
+    else:
+        return df.copy()
+
+def safe_head(df, n):
+    return df.head(n) if len(df) >= n else df.copy()
+
+datasets = {
+    "Base (chỉ thật)": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_sample),
+        safe_sample(df_real_2, n_sample),
+        safe_sample(df_real_3, n_sample),
     ], ignore_index=True),
 
-    # (2) Lỗi GAN + lỗi thật
-    "Lỗi GAN + Lỗi thật (2.5K+2.5K+5K)": pd.concat([
-        df_gan_filtered.head(2500),
-        df_real_faults.sample(2500),
-        df_real_nonfaults.sample(5000)
+    "Base + GAN": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_real_per_fault),
+        safe_head(df_gan_1, n_gan_per_fault),
+        safe_sample(df_real_2, n_real_per_fault),
+        safe_head(df_gan_2, n_gan_per_fault),
+        safe_sample(df_real_3, n_real_per_fault),
+        safe_head(df_gan_3, n_gan_per_fault),
     ], ignore_index=True),
 
-    # (3) Chỉ lỗi thật (5K+5K)
-    "Chỉ lỗi thật (5K+5K)": pd.concat([
-        df_real_faults.sample(5000),
-        df_real_nonfaults.sample(5000)
-    ], ignore_index=True),
-
-    # (4) Fine-tuning
-    "Fine-tuned": None,  # xử lý riêng bên dưới
-    # (5) Adaptive Ratio (3K+3K+4K)
-    "Adaptive (3K+3K+4K)": pd.concat([
-        df_gan_filtered.head(2500),
-        df_real_faults.sample(2500),
-        df_real_nonfaults.sample(5000)
-    ], ignore_index=True),
-
-    # (6) GAN Confidence (low distance + high anomaly)
-    "GAN Confidence (Top 3K) + 2K + 5K": pd.concat([
-        df_gan_filtered.head(3000),
-        df_real_faults.sample(2000),
-        df_real_nonfaults.sample(5000)
+    "Base + GAN chất lượng": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_real_per_fault),
+        safe_head(df_gan_1_q, n_gan_per_fault),
+        safe_sample(df_real_2, n_real_per_fault),
+        safe_head(df_gan_2_q, n_gan_per_fault),
+        safe_sample(df_real_3, n_real_per_fault),
+        safe_head(df_gan_3_q, n_gan_per_fault),
     ], ignore_index=True)
 }
 
-results = []
+def save_results(y_test, y_pred, y_proba, case, model_name, save_dir):
+    # Độ đo tổng hợp
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='macro')
+    precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+    recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+    try:
+        roc_auc = roc_auc_score(y_test, y_proba, multi_class='ovr')
+    except:
+        roc_auc = None
 
-def train_and_evaluate(df, label):
+    # Lưu txt
+    report_txt = os.path.join(save_dir, f"{case.replace(' ', '_')}_{model_name}_report.txt")
+    with open(report_txt, "w", encoding="utf-8") as f:
+        f.write(f"{case} | {model_name}\n")
+        f.write(f"Accuracy:      {acc:.4f}\n")
+        f.write(f"F1-macro:      {f1:.4f}\n")
+        f.write(f"Precision:     {precision:.4f}\n")
+        f.write(f"Recall:        {recall:.4f}\n")
+        if roc_auc is not None:
+            f.write(f"ROC-AUC (OvR): {roc_auc:.4f}\n")
+        f.write("\nConfusion Matrix:\n")
+        f.write(np.array2string(confusion_matrix(y_test, y_pred)))
+        f.write("\n\nClassification Report:\n")
+        f.write(classification_report(y_test, y_pred, digits=4))
+    print(f"Saved report to {report_txt}")
+
+    # Lưu confusion matrix hình ảnh
+    cm_plot = os.path.join(save_dir, f"{case.replace(' ', '_')}_{model_name}_confusion_matrix.png")
+    plt.figure(figsize=(6,5))
+    sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+    plt.title(f"Confusion Matrix: {case} - {model_name}", fontsize=13, pad=20)
+    plt.xlabel("Predicted", fontsize=11)
+    plt.ylabel("True", fontsize=11)
+    plt.subplots_adjust(top=0.85)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(cm_plot)
+    plt.close()
+    print(f"Saved confusion matrix plot to {cm_plot}")
+
+def train_evaluate_xgb_lgbm(df, label):
     X = df[features]
-    y = df['Fault_Status']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    y = df['Fault_Type']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
 
-    # Random Forest
-    rf = RandomForestClassifier(random_state=42)
-    rf.fit(X_train, y_train)
-    pred_rf = rf.predict(X_test)
-    f1_rf = f1_score(y_test, pred_rf)
-    auc_rf = roc_auc_score(y_test, rf.predict_proba(X_test)[:, 1])
-    print(f"\n=== Case: {label} - Random Forest ===")
-    print("Confusion Matrix:\n", confusion_matrix(y_test, pred_rf))
-    print(classification_report(y_test, pred_rf))
-    print("ROC AUC:", auc_rf)
-    results.append({"Case": label, "Model": "Random Forest", "F1": f1_rf, "AUC": auc_rf})
+    models = [
+        ("XGBoost", XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)),
+        ("LightGBM", LGBMClassifier(random_state=42))
+    ]
 
-    # XGBoost
-    xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-    xgb.fit(X_train, y_train)
-    pred_xgb = xgb.predict(X_test)
-    f1_xgb = f1_score(y_test, pred_xgb)
-    auc_xgb = roc_auc_score(y_test, xgb.predict_proba(X_test)[:, 1])
-    print(f"\n=== Case: {label} - XGBoost ===")
-    print("Confusion Matrix:\n", confusion_matrix(y_test, pred_xgb))
-    print(classification_report(y_test, pred_xgb))
-    print("ROC AUC:", auc_xgb)
-    results.append({"Case": label, "Model": "XGBoost", "F1": f1_xgb, "AUC": auc_xgb})
+    results = []
 
-# ===== RUN STRATEGIES =====
-for label, df_case in strategies.items():
-    if label == "Fine-tuned":
-        # Step 1: train on GAN
-        df_gan_train = pd.concat([
-            df_gan_filtered.head(5000),
-            df_real_nonfaults.sample(5000)
-        ], ignore_index=True)
-
-        X1 = df_gan_train[features]
-        y1 = df_gan_train['Fault_Status']
-        model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-        model.fit(X1, y1)
-
-        # Step 2: fine-tune on real faults
-        df_real_ft = pd.concat([
-            df_real_faults.sample(2500),
-            df_real_nonfaults.sample(2500)
-        ], ignore_index=True)
-        X2 = df_real_ft[features]
-        y2 = df_real_ft['Fault_Status']
-        model.fit(X2, y2, xgb_model=model)  # fine-tuning
-
-        # Step 3: test
-        X_train, X_test, y_train, y_test = train_test_split(X2, y2, test_size=0.3, random_state=42)
+    for name, model in models:
+        model.fit(X_train, y_train)
         pred = model.predict(X_test)
-        proba = model.predict_proba(X_test)[:, 1]
-        f1 = f1_score(y_test, pred)
-        auc = roc_auc_score(y_test, proba)
-
-        print(f"\n=== Case: {label} - Fine-tuned XGBoost ===")
+        proba = model.predict_proba(X_test)
+        f1 = f1_score(y_test, pred, average='macro')
+        try:
+            auc = roc_auc_score(y_test, proba, multi_class='ovr', average='macro')
+        except:
+            auc = None
+        print(f"\n== {label} | {name} ==")
         print("Confusion Matrix:\n", confusion_matrix(y_test, pred))
-        print(classification_report(y_test, pred))
-        print(f"ROC AUC: {auc:.4f}")
+        print(classification_report(y_test, pred, digits=4))
+        results.append({
+            "Case": label,
+            "Model": name,
+            "F1": f1,
+            "AUC": auc
+        })
+        save_results(y_test, pred, proba, label, name, result_dir)
+    return results
 
-        results.append({"Case": label, "Model": "XGBoost", "F1": f1, "AUC": auc})
+# --- RUN ---
+all_results = []
+for name, df_case in datasets.items():
+    print(f"\n--- Running: {name} ---")
+    all_results.extend(train_evaluate_xgb_lgbm(df_case, name))
 
-
-    else:
-        train_and_evaluate(df_case, label)
-
-# ===== PLOT RESULTS =====
-df_results = pd.DataFrame(results)
+# --- Tổng hợp kết quả ---
+df_results = pd.DataFrame(all_results)
 print(df_results)
 
-plt.figure(figsize=(10, 5))
+plt.figure(figsize=(12, 5))
 sns.barplot(data=df_results, x="Case", y="F1", hue="Model")
-plt.title("So sánh F1-score giữa các chiến lược huấn luyện")
-plt.xticks(rotation=25)
+plt.title("So sánh F1-score giữa các mô hình và kịch bản (đa lớp)")
 plt.tight_layout()
 plt.show()
 
-plt.figure(figsize=(10, 5))
+plt.figure(figsize=(12, 5))
 sns.barplot(data=df_results, x="Case", y="AUC", hue="Model")
-plt.title("So sánh AUC giữa các chiến lược huấn luyện")
-plt.xticks(rotation=25)
+plt.title("So sánh AUC giữa các mô hình và kịch bản (đa lớp)")
 plt.tight_layout()
 plt.show()
 
 ```
 
-### train_full_data_with_gan.py
+### model_training\model_with_gan_2_tuning.py
 ```py
+import warnings
+warnings.filterwarnings('ignore')
 import pandas as pd
 import numpy as np
-import seaborn as sns
+import os
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
-
-# Load dữ liệu
-df = pd.read_csv("data/full_dataset_with_gan.csv")
-df = df.dropna()
-
-# Cột đặc trưng và target
-features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
-            'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
-X = df[features]
-y = df['Fault_Status']
-
-# Chuẩn hóa
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Chia tập train-test
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.3, stratify=y, random_state=42)
-
-# Huấn luyện Random Forest
-rf = RandomForestClassifier(random_state=42)
-rf.fit(X_train, y_train)
-y_pred_rf = rf.predict(X_test)
-roc_rf = roc_auc_score(y_test, rf.predict_proba(X_test)[:, 1])
-
-print("=== Random Forest ===")
-print(confusion_matrix(y_test, y_pred_rf))
-print(classification_report(y_test, y_pred_rf))
-print("ROC AUC:", roc_rf)
-
-# Huấn luyện XGBoost
-xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-xgb.fit(X_train, y_train)
-y_pred_xgb = xgb.predict(X_test)
-roc_xgb = roc_auc_score(y_test, xgb.predict_proba(X_test)[:, 1])
-
-print("=== XGBoost ===")
-print(confusion_matrix(y_test, y_pred_xgb))
-print(classification_report(y_test, y_pred_xgb))
-print("ROC AUC:", roc_xgb)
-
-# Vẽ confusion matrix
-fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-sns.heatmap(confusion_matrix(y_test, y_pred_rf), annot=True, fmt="d", cmap="Blues", ax=axs[0])
-axs[0].set_title("Random Forest")
-
-sns.heatmap(confusion_matrix(y_test, y_pred_xgb), annot=True, fmt="d", cmap="Oranges", ax=axs[1])
-axs[1].set_title("XGBoost")
-
-plt.tight_layout()
-plt.show()
-
-```
-
-### train_normal_data.py
-```py
-import pandas as pd
-import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
-
-# ===== 1. LOAD & PREPARE DATA =====
-df = pd.read_csv("data/processed_iot_dataset.csv").dropna()
-
-features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
-            'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
-target = 'Fault_Status'
-
-X = df[features]
-y = df[target]
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.3, random_state=42, stratify=y
+from lightgbm import LGBMClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import (
+    confusion_matrix, classification_report, f1_score, roc_auc_score,
+    accuracy_score, precision_score, recall_score
 )
 
-# ===== 2. EVALUATION FUNCTION =====
-def evaluate_model(model, X_test, y_test, model_name="Model"):
-    y_pred = model.predict(X_test)
-    y_proba = model.predict_proba(X_test)[:, 1]
-    cm = confusion_matrix(y_test, y_pred)
+# --- Thư mục lưu kết quả ---
+result_dir = "evaluation/model_gan_2_tuning"
+os.makedirs(result_dir, exist_ok=True)
 
-    print(f"\n {model_name} ")
-    print("Confusion Matrix:\n", cm)
-    print("\nClassification Report:\n", classification_report(y_test, y_pred))
-    print(f"ROC AUC: {roc_auc_score(y_test, y_proba):.4f}")
+# --- 1. Load data ---
+df_real = pd.read_csv("data/processed_iot_dataset_full.csv")
+df_gan = pd.read_csv("data/ctgan_synthetic_optimized.csv")
 
-    plt.figure(figsize=(5, 4))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-    plt.title(f'{model_name} - Confusion Matrix')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.tight_layout()
-    plt.show()
+features = [
+    'Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
+    'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score'
+]
 
-# ===== 3. TRAIN & EVALUATE MODELS =====
-# Random Forest
-rf = RandomForestClassifier(random_state=42)
-rf.fit(X_train, y_train)
-evaluate_model(rf, X_test, y_test, model_name="Random Forest")
+# --- 2. Chuẩn bị từng class thật ---
+df_real_0 = df_real[df_real['Fault_Type'] == 0].copy()
+df_real_1 = df_real[df_real['Fault_Type'] == 1].copy()
+df_real_2 = df_real[df_real['Fault_Type'] == 2].copy()
+df_real_3 = df_real[df_real['Fault_Type'] == 3].copy()
 
-# XGBoost
-xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-xgb.fit(X_train, y_train)
-evaluate_model(xgb, X_test, y_test, model_name="XGBoost")
+# --- 3. GAN lỗi từng class ---
+df_gan_1 = df_gan[df_gan['Fault_Type'] == 1].copy()
+df_gan_2 = df_gan[df_gan['Fault_Type'] == 2].copy()
+df_gan_3 = df_gan[df_gan['Fault_Type'] == 3].copy()
 
-```
-
-### tuning_train_and_pre.py.py
-```py
-
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
+# --- 4. Lọc GAN lỗi chất lượng ---
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import pairwise_distances
-
-# ==== Load & Preprocess ====
-df_real = pd.read_csv("data/processed_iot_dataset.csv").dropna()
-df_gan = pd.read_csv("data/processed_ctgan_generated_faults.csv").dropna()
-
-features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
-            'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
-
-df_real_faults = df_real[df_real['Fault_Status'] == 1].copy()
-df_real_nonfaults = df_real[df_real['Fault_Status'] == 0].copy()
-
-# ==== Filtering GAN Samples ====
 scaler = StandardScaler()
-real_scaled = scaler.fit_transform(df_real_faults[features])
-gan_scaled = scaler.transform(df_gan[features])
-df_gan['distance'] = pairwise_distances(gan_scaled, real_scaled).min(axis=1)
-df_gan['score'] = df_gan['distance'] - df_gan['Anomaly_Score']
-df_gan_filtered = df_gan.sort_values("score")
+df_real_faults = pd.concat([df_real_1, df_real_2, df_real_3], ignore_index=True)
+real_faults_scaled = scaler.fit_transform(df_real_faults[features])
 
-# ==== Define Training Strategies ====
-np.random.seed(42)
-strategies = {
-    "Chỉ lỗi GAN (5K+5K)": pd.concat([
-        df_gan_filtered.head(5000), 
-        df_real_nonfaults.sample(5000)
-        ], ignore_index=True),
-    "Lỗi GAN + Lỗi thật (2.5K+2.5K+5K)": pd.concat([
-        df_gan_filtered.head(2500), 
-        df_real_faults.sample(2500), df_real_nonfaults.sample(5000)
-        ], ignore_index=True),
-    "Chỉ lỗi thật (5K+5K)": pd.concat([
-        df_real_faults.sample(5000), 
-        df_real_nonfaults.sample(5000)
-        ], ignore_index=True),
-    "Adaptive (3K+3K+4K)": pd.concat([
-        df_gan_filtered.head(3000), 
-        df_real_faults.sample(3000), 
-        df_real_nonfaults.sample(4000)
-        ], ignore_index=True),
-    "GAN Confidence (Top 3K) + 2K + 5K": pd.concat([
-        df_gan_filtered.head(3000), 
-        df_real_faults.sample(2000), 
-        df_real_nonfaults.sample(5000)
-        ], ignore_index=True)
+def filter_gan_quality(df_gan_fault):
+    if len(df_gan_fault) == 0:
+        return df_gan_fault
+    gan_scaled = scaler.transform(df_gan_fault[features])
+    dists = pairwise_distances(gan_scaled, real_faults_scaled)
+    df_gan_fault = df_gan_fault.copy()
+    df_gan_fault['distance'] = dists.min(axis=1)
+    df_gan_fault['score'] = df_gan_fault['distance'] - df_gan_fault['Anomaly_Score']
+    return df_gan_fault.sort_values('score')
+
+df_gan_1_q = filter_gan_quality(df_gan_1)
+df_gan_2_q = filter_gan_quality(df_gan_2)
+df_gan_3_q = filter_gan_quality(df_gan_3)
+
+# --- 5. Cân bằng số lượng mỗi nhãn ---
+real_ratio = 0.6
+n_0 = len(df_real_0)
+n_1 = int(len(df_real_1) + len(df_gan_1_q))
+n_2 = int(len(df_real_2) + len(df_gan_2_q))
+n_3 = int(len(df_real_3) + len(df_gan_3_q))
+n_sample = min(n_0, n_1, n_2, n_3)
+n_real_per_fault = int(n_sample * real_ratio)
+n_gan_per_fault = n_sample - n_real_per_fault
+
+def safe_sample(df, n):
+    if len(df) >= n:
+        return df.sample(n=n, random_state=42)
+    else:
+        return df.copy()
+
+def safe_head(df, n):
+    return df.head(n) if len(df) >= n else df.copy()
+
+datasets = {
+    "Base (chỉ thật)": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_sample),
+        safe_sample(df_real_2, n_sample),
+        safe_sample(df_real_3, n_sample),
+    ], ignore_index=True),
+
+    "Base + GAN": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_real_per_fault),
+        safe_head(df_gan_1, n_gan_per_fault),
+        safe_sample(df_real_2, n_real_per_fault),
+        safe_head(df_gan_2, n_gan_per_fault),
+        safe_sample(df_real_3, n_real_per_fault),
+        safe_head(df_gan_3, n_gan_per_fault),
+    ], ignore_index=True),
+
+    "Base + GAN chất lượng": pd.concat([
+        safe_sample(df_real_0, n_sample),
+        safe_sample(df_real_1, n_real_per_fault),
+        safe_head(df_gan_1_q, n_gan_per_fault),
+        safe_sample(df_real_2, n_real_per_fault),
+        safe_head(df_gan_2_q, n_gan_per_fault),
+        safe_sample(df_real_3, n_real_per_fault),
+        safe_head(df_gan_3_q, n_gan_per_fault),
+    ], ignore_index=True)
 }
 
-results = []
+def save_results(y_test, y_pred, y_proba, case, model_name, save_dir, best_params=None):
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='macro')
+    precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+    recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+    try:
+        roc_auc = roc_auc_score(y_test, y_proba, multi_class='ovr')
+    except:
+        roc_auc = None
 
-# ==== Tuning Function ====
-def tune_model(X, y, model_type):
-    if model_type == "Random Forest":
-        model = RandomForestClassifier(random_state=42)
-        params = {
-            "n_estimators": [100, 200],
-            "max_depth": [None, 10, 20],
-            "min_samples_split": [2, 5]
-        }
-    else:
-        model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-        params = {
-            "n_estimators": [100, 200],
-            "max_depth": [3, 6],
-            "learning_rate": [0.1, 0.05]
-        }
+    report_txt = os.path.join(save_dir, f"{case.replace(' ', '_')}_{model_name}_report.txt")
+    with open(report_txt, "w", encoding="utf-8") as f:
+        f.write(f"{case} | {model_name}\n")
+        if best_params is not None:
+            f.write(f"Best Params: {best_params}\n")
+        f.write(f"Accuracy:      {acc:.4f}\n")
+        f.write(f"F1-macro:      {f1:.4f}\n")
+        f.write(f"Precision:     {precision:.4f}\n")
+        f.write(f"Recall:        {recall:.4f}\n")
+        if roc_auc is not None:
+            f.write(f"ROC-AUC (OvR): {roc_auc:.4f}\n")
+        f.write("\nConfusion Matrix:\n")
+        f.write(np.array2string(confusion_matrix(y_test, y_pred)))
+        f.write("\n\nClassification Report:\n")
+        f.write(classification_report(y_test, y_pred, digits=4))
+    print(f"Saved report to {report_txt}")
 
-    grid = GridSearchCV(model, params, scoring='f1', cv=3, n_jobs=-1)
-    grid.fit(X, y)
-    return grid.best_estimator_
+    # Lưu confusion matrix hình ảnh
+    cm_plot = os.path.join(save_dir, f"{case.replace(' ', '_')}_{model_name}_confusion_matrix.png")
+    plt.figure(figsize=(6,5))
+    sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+    plt.title(f"Confusion Matrix: {case} - {model_name}", fontsize=13, pad=24)
+    plt.xlabel("Predicted", fontsize=11)
+    plt.ylabel("True", fontsize=11)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Để lại khoảng phía trên
+    plt.subplots_adjust(top=0.85)           # Cách này giúp tăng phần trên cho title
+    plt.savefig(cm_plot, bbox_inches='tight') # Lưu lại cả vùng ngoài
+    plt.close()
+    print(f"Saved confusion matrix plot to {cm_plot}")
 
-# ==== Training & Evaluation ====
-def train_and_evaluate(df, label):
+def train_evaluate_xgb_lgbm_tuned(df, label):
     X = df[features]
-    y = df['Fault_Status']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    y = df['Fault_Type']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
 
-    for model_type in ["Random Forest", "XGBoost"]:
-        best_model = tune_model(X_train, y_train, model_type)
-        preds = best_model.predict(X_test)
-        proba = best_model.predict_proba(X_test)[:, 1]
-        f1 = f1_score(y_test, preds)
-        auc = roc_auc_score(y_test, proba)
-        print(f"\n=== Case: {label} - {model_type} ===")
-        print("Confusion Matrix:\n", confusion_matrix(y_test, preds))
-        print(classification_report(y_test, preds))
-        print("ROC AUC:", auc)
-        results.append({"Case": label, "Model": model_type, "F1": f1, "AUC": auc})
+    # ==== Class Weight ====
+    classes, counts = np.unique(y_train, return_counts=True)
+    class_weights = {k: max(counts)/v for k, v in zip(classes, counts)}
+    sample_weight = np.array([class_weights[yy] for yy in y_train])
 
-# ==== Run All Strategies ====
-for label, df_case in strategies.items():
-    train_and_evaluate(df_case, label)
+    xgb_params = {
+        'n_estimators': [100, 200],
+        'max_depth': [3, 5, 7],
+        'learning_rate': [0.1, 0.05],
+        'subsample': [0.8, 1.0],
+        'colsample_bytree': [0.8, 1.0]
+    }
+    lgbm_params = {
+        'n_estimators': [100, 200],
+        'max_depth': [3, 5, 7, -1],
+        'learning_rate': [0.1, 0.05],
+        'subsample': [0.8, 1.0],
+        'class_weight': [class_weights]
+    }
 
-# ==== Fine-tuning (XGBoost + Random Forest) ====
-def run_fine_tuning():
-    print("\nFine-tuned Models")
-    gan_train = pd.concat([df_gan_filtered.head(5000), df_real_nonfaults.sample(5000)], ignore_index=True)
-    real_finetune = pd.concat([df_real_faults.sample(2500), df_real_nonfaults.sample(2500)], ignore_index=True)
+    results = []
 
-    X_gan, y_gan = gan_train[features], gan_train['Fault_Status']
-    X_real, y_real = real_finetune[features], real_finetune['Fault_Status']
-    X_train, X_test, y_train, y_test = train_test_split(X_real, y_real, test_size=0.3, random_state=42)
+    # XGBoost (tuned + class_weight)
+    grid_xgb = GridSearchCV(XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42),
+                            xgb_params, cv=3, n_jobs=-1, scoring='f1_macro', verbose=0)
+    grid_xgb.fit(X_train, y_train, sample_weight=sample_weight)
+    xgb_best = grid_xgb.best_estimator_
+    pred = xgb_best.predict(X_test)
+    proba = xgb_best.predict_proba(X_test)
+    f1 = f1_score(y_test, pred, average='macro')
+    try:
+        auc = roc_auc_score(y_test, proba, multi_class='ovr', average='macro')
+    except:
+        auc = None
+    results.append({
+        "Case": label,
+        "Model": "XGBoost (tuned+cw)",
+        "F1": f1,
+        "AUC": auc
+    })
+    save_results(y_test, pred, proba, label, "XGBoost_tuned_classweight", result_dir, grid_xgb.best_params_)
 
-    # XGBoost Fine-tuned
-    xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-    xgb.fit(X_gan, y_gan)
-    xgb.fit(X_real, y_real, xgb_model=xgb)
-    pred_xgb = xgb.predict(X_test)
-    auc_xgb = roc_auc_score(y_test, xgb.predict_proba(X_test)[:, 1])
-    f1_xgb = f1_score(y_test, pred_xgb)
-    print("XGBoost Fine-tuned:")
-    print(confusion_matrix(y_test, pred_xgb))
-    print(classification_report(y_test, pred_xgb))
-    print("ROC AUC:", auc_xgb)
-    results.append({"Case": "Fine-tuned", "Model": "XGBoost", "F1": f1_xgb, "AUC": auc_xgb})
+    # LightGBM (tuned + class_weight)
+    grid_lgbm = GridSearchCV(LGBMClassifier(random_state=42),
+                             lgbm_params, cv=3, n_jobs=-1, scoring='f1_macro', verbose=0)
+    grid_lgbm.fit(X_train, y_train)
+    lgbm_best = grid_lgbm.best_estimator_
+    pred = lgbm_best.predict(X_test)
+    proba = lgbm_best.predict_proba(X_test)
+    f1 = f1_score(y_test, pred, average='macro')
+    try:
+        auc = roc_auc_score(y_test, proba, multi_class='ovr', average='macro')
+    except:
+        auc = None
+    results.append({
+        "Case": label,
+        "Model": "LightGBM (tuned+cw)",
+        "F1": f1,
+        "AUC": auc
+    })
+    save_results(y_test, pred, proba, label, "LightGBM_tuned_classweight", result_dir, grid_lgbm.best_params_)
 
-run_fine_tuning()
+    return results
 
-# ==== Visualization ====
-df_results = pd.DataFrame(results)
-print("\nKết quả tổng hợp:")
+# --- RUN ---
+all_results = []
+for name, df_case in datasets.items():
+    print(f"\n--- Running: {name} ---")
+    all_results.extend(train_evaluate_xgb_lgbm_tuned(df_case, name))
+
+# --- Tổng hợp kết quả ---
+df_results = pd.DataFrame(all_results)
 print(df_results)
 
-order = ["Chỉ lỗi GAN (5K+5K)", "Lỗi GAN + Lỗi thật (2.5K+2.5K+5K)", "Chỉ lỗi thật (5K+5K)",
-         "Fine-tuned", "Adaptive (3K+3K+4K)", "GAN Confidence (Top 3K) + 2K + 5K"]
-
-plt.figure(figsize=(10, 5))
-sns.barplot(data=df_results, x="Case", y="F1", hue="Model", order=order)
-plt.title("So sánh F1-score giữa các chiến lược huấn luyện (Tuned)")
-plt.xticks(rotation=25)
+plt.figure(figsize=(14, 5))
+sns.barplot(data=df_results, x="Case", y="F1", hue="Model")
+plt.title("So sánh F1-score giữa các mô hình (tuned+class_weight) và kịch bản (đa lớp)")
 plt.tight_layout()
+f1_fig_path = os.path.join(result_dir, "compare_f1score.png")
+plt.savefig(f1_fig_path)
 plt.show()
+print(f"Lưu ảnh F1-score tại: {f1_fig_path}")
 
-plt.figure(figsize=(10, 5))
-sns.barplot(data=df_results, x="Case", y="AUC", hue="Model", order=order)
-plt.title("So sánh AUC giữa các chiến lược huấn luyện (Tuned)")
-plt.xticks(rotation=25)
+plt.figure(figsize=(14, 5))
+sns.barplot(data=df_results, x="Case", y="AUC", hue="Model")
+plt.title("So sánh AUC giữa các mô hình (tuned+class_weight) và kịch bản (đa lớp)")
 plt.tight_layout()
+auc_fig_path = os.path.join(result_dir, "compare_auc.png")
+plt.savefig(auc_fig_path)
 plt.show()
+print(f"Lưu ảnh AUC tại: {auc_fig_path}")
 
 ```
 
-### tuning_train_full.py
-```py
-
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
-
-# ==== 1. Load & chuẩn hóa dữ liệu ====
-df = pd.read_csv("data/full_dataset_with_gan.csv").dropna()
-
-features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current',
-            'FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
-X = df[features]
-y = df['Fault_Status']
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.3, stratify=y, random_state=42
-)
-
-# ==== 2. Hàm tuning với GridSearchCV ====
-def tune_model(model_type):
-    if model_type == "Random Forest":
-        model = RandomForestClassifier(random_state=42)
-        param_grid = {
-            "n_estimators": [100, 200],
-            "max_depth": [None, 10, 20],
-            "min_samples_split": [2, 5]
-        }
-    else:  # XGBoost
-        model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-        param_grid = {
-            "n_estimators": [100, 200],
-            "max_depth": [3, 6],
-            "learning_rate": [0.05, 0.1]
-        }
-
-    grid = GridSearchCV(model, param_grid, scoring='f1', cv=2, n_jobs=-1)
-    grid.fit(X_train, y_train)
-    print(f" Best params for {model_type}: {grid.best_params_}")
-    return grid.best_estimator_
-
-# ==== 3. Huấn luyện & đánh giá ====
-def evaluate_model(model, X_test, y_test, name):
-    y_pred = model.predict(X_test)
-    proba = model.predict_proba(X_test)[:, 1]
-    auc = roc_auc_score(y_test, proba)
-    print(f"\n {name}")
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
-    print(f"ROC AUC: {auc:.4f}")
-    return y_pred
-
-# Random Forest (Tuned)
-best_rf = tune_model("Random Forest")
-y_pred_rf = evaluate_model(best_rf, X_test, y_test, "Random Forest (Tuned)")
-
-# XGBoost (Tuned)
-best_xgb = tune_model("XGBoost")
-y_pred_xgb = evaluate_model(best_xgb, X_test, y_test, "XGBoost (Tuned)")
-
-# ==== 4. Vẽ confusion matrix ====
-fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-sns.heatmap(confusion_matrix(y_test, y_pred_rf), annot=True, fmt="d", cmap="Blues", ax=axs[0])
-axs[0].set_title("Random Forest (Tuned)")
-
-sns.heatmap(confusion_matrix(y_test, y_pred_xgb), annot=True, fmt="d", cmap="Oranges", ax=axs[1])
-axs[1].set_title("XGBoost (Tuned)")
-
-plt.tight_layout()
-plt.show()
-
-```
-
-### txl\txl.py
+### preprocessing\preprocess.py
 ```py
 import pandas as pd
 import numpy as np
@@ -560,16 +902,15 @@ from sklearn.preprocessing import MinMaxScaler
 import os
 
 # Đọc dữ liệu
-file_path = os.path.join('D:/dow/test1/txl/data/iot_equipment_monitoring_dataset.csv')
+file_path = os.path.join('data/iot_equipment_monitoring_dataset.csv')
 df = pd.read_csv(file_path)
 
-# Hiển thị thông tin tổng quan về dữ liệu
-print("Thông tin dữ liệu:")
+# ====================== 1. TIỀN XỬ LÝ CHUNG ======================
+print("Thông tin dữ liệu ban đầu:")
 print(df.info())
-print("\nSố lượng giá trị bị thiếu trong mỗi cột:")
-print(df.isnull().sum())
+print(df.head())
 
-# Chuyển Timestamp về datetime và tách thành các cột con
+# Xử lý thời gian
 df['Timestamp'] = pd.to_datetime(df['Timestamp'])
 df['Year'] = df['Timestamp'].dt.year
 df['Month'] = df['Timestamp'].dt.month
@@ -580,49 +921,42 @@ df.drop(columns=['Timestamp'], inplace=True)
 
 # Đưa cột thời gian lên đầu
 time_columns = ['Day', 'Month', 'Year', 'Hour', 'Minute']
-other_columns = [col for col in df.columns if col not in time_columns]
-df = df[time_columns + other_columns]
+df = df[time_columns + [col for col in df.columns if col not in time_columns]]
 
-# Mã hóa Sensor_ID (bỏ tiền tố 'S')
+# Làm sạch Sensor_ID
 if 'Sensor_ID' in df.columns:
-    df['Sensor_ID'] = df['Sensor_ID'].astype(str).str.extract('(\d+)').astype(int)
+    df['Sensor_ID'] = df['Sensor_ID'].astype(str).str.extract(r'(\d+)').astype(int)
 
-# Xoá các cột đã chuẩn hóa sẵn
-columns_to_drop = ['Normalized_Temp', 'Normalized_Vibration', 'Normalized_Pressure', 'Normalized_Voltage', 'Normalized_Current']
+# Xóa các cột đã chuẩn hóa nếu có
+columns_to_drop = [
+    'Normalized_Temp', 'Normalized_Vibration',
+    'Normalized_Pressure', 'Normalized_Voltage', 'Normalized_Current'
+]
 df.drop(columns=[col for col in columns_to_drop if col in df.columns], inplace=True)
 
-# Mã hóa Fault_Type
-# Mã hóa trực tiếp cột Fault_Type
-fault_type_mapping = {'Normal': 0, 'Electrical Fault': 1, 'Mechanical Failure': 2, 'Overheating': 3}
-df['Fault_Type'] = df['Fault_Type'].fillna('Normal').map(fault_type_mapping)
+# Làm sạch và mã hóa Fault_Type
+df['Fault_Type'] = df['Fault_Type'].fillna('normal') \
+                                   .astype(str).str.strip().str.lower()
 
-# df['Fault_Type'] = df['Fault_Type'].fillna('Normal')
-# fault_type_mapping = {'Normal': 0, 'Electrical Fault': 1, 'Mechanical Failure': 2, 'Overheating': 3}
-# df['Fault_Type_Encoded'] = df['Fault_Type'].map(fault_type_mapping)
+fault_type_mapping = {
+    'normal': 0,
+    'electrical fault': 1,
+    'mechanical failure': 2,
+    'overheating': 3
+}
+df['Fault_Type'] = df['Fault_Type'].map(fault_type_mapping)
+df['Fault_Type'] = df['Fault_Type'].fillna(0).astype(int)
 
-# # Kiểm tra và loại bỏ cột object không cần thiết
-# for col in df.select_dtypes(include=['object']).columns:
-#     print(f"Cột '{col}' có dữ liệu không phải số -> loại bỏ.")
-#     df.drop(columns=[col], inplace=True)
+# Xoá cột Fault_Status nếu tồn tại
+if 'Fault_Status' in df.columns:
+    df.drop(columns=['Fault_Status'], inplace=True)
 
-# Chuẩn hóa dữ liệu
+# ====================== 2. CHUẨN HÓA DỮ LIỆU ======================
 features = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current']
 scaler = MinMaxScaler()
 df[features] = scaler.fit_transform(df[features])
 
-# Vẽ Boxplot để xem ngoại lai
-sensor_columns = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current']
-
-plt.figure(figsize=(12, 8))
-for i, col in enumerate(sensor_columns):
-    plt.subplot(2, 3, i + 1)
-    sns.boxplot(data=df, x=col)
-    plt.title(f'Box Plot - {col}')
-plt.tight_layout()
-plt.show()
-
-
-# Hàm xử lý outlier bằng IQR
+# ====================== 3. LOẠI OUTLIERS (IQR) ======================
 def remove_outliers_iqr(df, columns):
     df_clean = df.copy()
     for column in columns:
@@ -634,45 +968,49 @@ def remove_outliers_iqr(df, columns):
         df_clean = df_clean[(df_clean[column] >= lower_bound) & (df_clean[column] <= upper_bound)]
     return df_clean
 
-# Áp dụng loại bỏ outlier cho các cột cảm biến gốc
-sensor_columns = ['Temperature', 'Vibration', 'Pressure', 'Voltage', 'Current']
-df_no_outliers = remove_outliers_iqr(df, sensor_columns)
-print(f"\nKích thước dữ liệu sau khi loại bỏ outliers: {df_no_outliers.shape}")
+df_cleaned = remove_outliers_iqr(df, features)
+print(f"Kích thước sau khi loại outliers: {df_cleaned.shape}")
+print(df.head())
 
-# Trực quan phân phối Fault_Status
-print("\nPhân phối dữ liệu (Fault_Status):")
-print(df['Fault_Status'].value_counts())
-imbalance_ratio = df['Fault_Status'].value_counts(normalize=True)
-print("\nTỷ lệ mất cân bằng dữ liệu:")
-print(imbalance_ratio)
+# ====================== 4. LƯU FILE ======================
 
-plt.figure(figsize=(10, 6))
-sns.countplot(x='Fault_Status', data=df)
-plt.title("Sự mất cân bằng dữ liệu trong cột Fault_Status")
-plt.xlabel("Fault_Status")
-plt.ylabel("Số lượng")
+# Bản giữ nguyên FFT & Anomaly
+out_full = os.path.join('data/processed_iot_dataset_full.csv')
+df_cleaned.to_csv(out_full, index=False)
+print(f"Đã lưu: {out_full}")
+
+# Bản đã xoá FFT & Anomaly
+fft_cols = ['FFT_Feature1', 'FFT_Feature2', 'Anomaly_Score']
+df_no_fft = df_cleaned.drop(columns=[col for col in fft_cols if col in df_cleaned.columns])
+out_no_fft = os.path.join('data/processed_iot_dataset_no_fft_anomaly.csv')
+df_no_fft.to_csv(out_no_fft, index=False)
+print(f"Đã lưu: {out_no_fft}")
+
+# ====================== 5. TRỰC QUAN ======================
+
+# Boxplot xem outliers
+plt.figure(figsize=(12, 8))
+for i, col in enumerate(features):
+    plt.subplot(2, 3, i + 1)
+    sns.boxplot(data=df, x=col)
+    plt.title(f'Box Plot - {col}')
+plt.tight_layout()
 plt.show()
 
-# Trực quan hóa phân phối loại lỗi
+# Biểu đồ mất cân bằng lớp lỗi
 plt.figure(figsize=(10, 6))
-sns.countplot(x='Fault_Type', data=df)
-plt.title('Phân phối các loại lỗi')
+sns.countplot(x='Fault_Type', data=df_cleaned)
+plt.title('Phân phối các loại lỗi sau xử lý')
 plt.xlabel('Fault Type (0: Normal, 1: Electrical, 2: Mechanical, 3: Overheating)')
 plt.ylabel('Số lượng')
-plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
 
 # Ma trận tương quan
 plt.figure(figsize=(10, 8))
-corr_matrix = df.corr()
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', cbar=True)
+sns.heatmap(df_cleaned.corr(), annot=True, cmap='coolwarm')
 plt.title('Ma trận tương quan')
+plt.tight_layout()
 plt.show()
-
-# Lưu dữ liệu đã xử lý
-processed_file_path = os.path.join('D:/dow/test1/txl/data/processed_iot_dataset.csv')
-df.to_csv(processed_file_path, index=False)
-print("Đã lưu file processed_iot_dataset.csv thành công!")
 
 ```

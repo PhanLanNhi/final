@@ -1,0 +1,23 @@
+===== XGBoost (tuned + class_weight) =====
+              precision    recall  f1-score   support
+
+           0     0.6260    0.4119    0.4969      6759
+           1     0.2146    0.3263    0.2589      1851
+           2     0.2472    0.3320    0.2834      1732
+           3     0.2324    0.3264    0.2715      1866
+
+    accuracy                         0.3745     12208
+   macro avg     0.3301    0.3491    0.3277     12208
+weighted avg     0.4497    0.3745    0.3961     12208
+
+Confusion matrix:
+[[2784 1470 1178 1327]
+ [ 562  604  291  394]
+ [ 522  345  575  290]
+ [ 579  396  282  609]]
+ROC-AUC (OvR): 0.6014
+
+Accuracy:   0.3745
+F1-macro:   0.3277
+Precision:  0.3301
+Recall:     0.3491

@@ -1,0 +1,24 @@
+Base + GAN | LightGBM
+Accuracy:      0.3182
+F1-macro:      0.3186
+Precision:     0.3204
+Recall:        0.3180
+ROC-AUC (OvR): 0.5763
+
+Confusion Matrix:
+[[865 598 523 613]
+ [715 780 470 535]
+ [703 504 804 468]
+ [688 595 454 755]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.2911    0.3328    0.3106      2599
+           1     0.3149    0.3120    0.3134      2500
+           2     0.3572    0.3243    0.3400      2479
+           3     0.3184    0.3030    0.3105      2492
+
+    accuracy                         0.3182     10070
+   macro avg     0.3204    0.3180    0.3186     10070
+weighted avg     0.3200    0.3182    0.3185     10070

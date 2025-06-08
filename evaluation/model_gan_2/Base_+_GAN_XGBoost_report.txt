@@ -1,0 +1,24 @@
+Base + GAN | XGBoost
+Accuracy:      0.3106
+F1-macro:      0.3110
+Precision:     0.3122
+Recall:        0.3106
+ROC-AUC (OvR): 0.5641
+
+Confusion Matrix:
+[[826 648 535 590]
+ [690 790 458 562]
+ [656 540 785 498]
+ [662 628 475 727]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.2915    0.3178    0.3041      2599
+           1     0.3031    0.3160    0.3094      2500
+           2     0.3484    0.3167    0.3318      2479
+           3     0.3058    0.2917    0.2986      2492
+
+    accuracy                         0.3106     10070
+   macro avg     0.3122    0.3106    0.3110     10070
+weighted avg     0.3119    0.3106    0.3109     10070

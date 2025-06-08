@@ -1,0 +1,23 @@
+===== LightGBM (tuned + class_weight) =====
+              precision    recall  f1-score   support
+
+           0     0.6305    0.4264    0.5087      6759
+           1     0.2136    0.3155    0.2547      1851
+           2     0.2413    0.3308    0.2790      1732
+           3     0.2251    0.3049    0.2590      1866
+
+    accuracy                         0.3775     12208
+   macro avg     0.3276    0.3444    0.3254     12208
+weighted avg     0.4501    0.3775    0.3995     12208
+
+Confusion matrix:
+[[2882 1416 1180 1281]
+ [ 560  584  315  392]
+ [ 531  342  573  286]
+ [ 598  392  307  569]]
+ROC-AUC (OvR): 0.5962
+
+Accuracy:   0.3775
+F1-macro:   0.3254
+Precision:  0.3276
+Recall:     0.3444

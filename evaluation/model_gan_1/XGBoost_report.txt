@@ -1,0 +1,24 @@
+XGBoost results
+Accuracy:      0.5627
+F1-macro:      0.2662
+Precision:     0.4392
+Recall:        0.2912
+ROC-AUC (OvR): 0.5925
+
+Confusion Matrix:
+[[6505   75   96   83]
+ [1667   75   45   64]
+ [1491   34  157   50]
+ [1638   51   44  133]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.5756    0.9624    0.7204      6759
+           1     0.3191    0.0405    0.0719      1851
+           2     0.4591    0.0906    0.1514      1732
+           3     0.4030    0.0713    0.1211      1866
+
+    accuracy                         0.5627     12208
+   macro avg     0.4392    0.2912    0.2662     12208
+weighted avg     0.4938    0.5627    0.4497     12208
